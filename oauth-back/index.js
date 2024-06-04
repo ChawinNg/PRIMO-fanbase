@@ -5,6 +5,7 @@ const { google } = require("googleapis");
 const crypto = require("crypto");
 const express = require("express");
 const session = require("express-session");
+const cors = require("cors");
 
 require("dotenv").config();
 
@@ -29,6 +30,11 @@ let userCredential = null;
 async function main() {
   const app = express();
 
+  app.use(
+    cors({
+      origin: "http://localhost:8080",
+    })
+  );
   app.use(
     session({
       secret: "your_secure_secret_key", // Replace with a strong secret
