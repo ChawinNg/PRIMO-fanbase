@@ -73,9 +73,6 @@ async function main() {
     }
 
     const googleUserInfo = await googleAuth.userinfo.get();
-    const email = googleUserInfo.data.email;
-    const name = googleUserInfo.data.given_name;
-    const surname = googleUserInfo.data.family_name;
 
     if (!googleUserInfo) {
       res.status(400).json({ success: false, msg: "Invalid credentials" });
