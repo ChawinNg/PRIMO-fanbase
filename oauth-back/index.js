@@ -76,7 +76,6 @@ async function main() {
       if (!googleUserInfo) {
         res.status(400).json({ success: false, msg: "Invalid credentials" });
       }
-      // res.status(200).json({ success: true, data: googleUserInfo.data });
       res.status(200).cookie("token", tokens.id_token).json({
         success: true,
         token: tokens.id_token,
