@@ -1,11 +1,11 @@
 const http = require("http");
-const https = require("https");
 const url = require("url");
 const { google } = require("googleapis");
 const crypto = require("crypto");
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 require("dotenv").config();
 
@@ -37,14 +37,13 @@ async function main() {
   );
   app.use(
     session({
-      secret: "your_secure_secret_key", // Replace with a strong secret
+      secret: "your_secure_secret_key",
       resave: false,
       saveUninitialized: false,
     })
   );
-
+  app.use(cookieParser());
   app.get("/", async (req, res) => {
-    userCredential = null;
     const state = crypto.randomBytes(32).toString("hex");
     req.session.state = state;
 
@@ -68,18 +67,27 @@ async function main() {
       res.end("State mismatch. Possible CSRF attack");
     } else {
       let { tokens } = await oauth2Client.getToken(q.code);
+      console.log("this is token", tokens);
       oauth2Client.setCredentials(tokens);
       userCredential = tokens;
-    }
 
-    const googleUserInfo = await googleAuth.userinfo.get();
+      const googleUserInfo = await googleAuth.userinfo.get();
 
-    if (!googleUserInfo) {
-      res.status(400).json({ success: false, msg: "Invalid credentials" });
+      if (!googleUserInfo) {
+        res.status(400).json({ success: false, msg: "Invalid credentials" });
+      }
+      // res.status(200).json({ success: true, data: googleUserInfo.data });
+      res.status(200).cookie("token", tokens.id_token).json({
+        success: true,
+        token: tokens.id_token,
+        data: googleUserInfo.data,
+      });
     }
-    res.status(200).json({ success: true, data: googleUserInfo.data });
   });
 
+  app.get("/cookie", (req, res) => {
+    res.send(req.cookies);
+  });
   const server = http.createServer(app);
   server.listen(3000);
 }
